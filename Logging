@@ -1,0 +1,115 @@
+class Program
+{
+    static void Main(string[] args)
+    {
+        Pathfinder filePathfinder = new Pathfinder(new FileLogWritter());
+        filePathfinder.Find();
+
+        Pathfinder consolePathfinder = new Pathfinder(new ConsoleLogWritter());
+        consolePathfinder.Find();
+
+        Pathfinder secureFilePathfinder = new Pathfinder(new SecureFileLogWritter());
+        secureFilePathfinder.Find();
+
+        Pathfinder secureConsolePathfinder = new Pathfinder(new SecureConsoleLogWritter());
+        secureConsolePathfinder.Find();
+
+        Pathfinder combinedPathfinder = new Pathfinder(new CombinedLogger());
+        combinedPathfinder.Find();
+    }
+}
+
+public interface ILogger
+{
+    public void Write(string message);
+}
+
+public class FileLogWritter : ILogger
+{
+    public void Write(string message)
+    {
+        File.AppendAllText("log.txt", message);
+    }
+}
+
+public class ConsoleLogWritter : ILogger
+{
+    public void Write(string message)
+    {
+        Console.WriteLine(message);
+    }
+}
+
+public class SecureFileLogWritter : ILogger
+{
+    private readonly FileLogWritter _innerLogger;
+
+    public SecureFileLogWritter()
+    {
+        _innerLogger = new FileLogWritter();
+    }
+
+    public void Write(string message)
+    {
+        if(DateTime.Now.DayOfWeek == DayOfWeek.Friday)
+        {
+            _innerLogger.Write(message);
+        }
+    }
+}
+
+public class SecureConsoleLogWritter : ILogger
+{
+    private readonly ConsoleLogWritter _innerLogger;
+
+    public SecureConsoleLogWritter()
+    {
+        _innerLogger = new ConsoleLogWritter();
+    }
+
+    public void Write(string message)
+    {
+        if (DateTime.Now.DayOfWeek == DayOfWeek.Friday)
+        {
+            _innerLogger.Write(message);
+        }
+    }
+}
+
+public class CombinedLogger : ILogger
+{
+    private readonly ConsoleLogWritter _consoleLogger;
+    private readonly FileLogWritter _fileLogger;
+
+    public CombinedLogger()
+    {
+        _consoleLogger = new ConsoleLogWritter();
+        _fileLogger = new FileLogWritter();
+    }
+
+    public void Write(string message)
+    {
+        _consoleLogger.Write(message);
+
+        if (DateTime.Now.DayOfWeek == DayOfWeek.Friday)
+        {
+            _fileLogger.Write(message);
+        }
+    }
+}
+
+public class Pathfinder
+{
+    private readonly ILogger _logger;
+
+    public Pathfinder(ILogger logger)
+    {
+        _logger = logger;
+    }
+
+    public void Find()
+    {
+        string message = "Finding something!";
+        _logger.Write(message);
+    }
+}
