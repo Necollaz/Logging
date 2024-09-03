@@ -29,10 +29,10 @@ public interface ILogger
 
 public class FileLogWritter : ILogger
 {
+    private readonly string _logFilePath = "log.txt";
+
     public void Write(string message)
     {
-        string _logFilePath = "log.txt";
-
         File.AppendAllText(_logFilePath, message);
     }
 }
