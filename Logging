@@ -1,19 +1,22 @@
-lass Program
+internal class Program
 {
     static void Main(string[] args)
     {
-        var loggers = new List<ILogger>
+        var pathfinders = new List<Pathfinder>
         {
-            new FileLogWritter(),
-            new ConsoleLogWritter(),
-            new SecureFileLogWritter(new FileLogWritter()),
-            new SecureConsoleLogWritter(new ConsoleLogWritter()),
-            new CombinedLogger(new List<ILogger> {new ConsoleLogWritter(), new FileLogWritter()})
+            new Pathfinder(new FileLogWritter()),
+            new Pathfinder(new ConsoleLogWritter()),
+            new Pathfinder(new SecureLogger(new FileLogWritter())),
+            new Pathfinder(new SecureLogger(new ConsoleLogWritter())),
+            new Pathfinder(new CombinedLogger(new List<ILogger>
+            {
+                new ConsoleLogWritter(),
+                new SecureLogger(new FileLogWritter())
+            }))
         };
 
-        foreach (var logger in loggers)
+        foreach (var pathfinder in pathfinders)
         {
-            Pathfinder pathfinder = new Pathfinder(logger);
             pathfinder.Find();
         }
     }
@@ -28,7 +31,9 @@ public class FileLogWritter : ILogger
 {
     public void Write(string message)
     {
-        File.AppendAllText("log.txt", message);
+        string _logFilePath = "log.txt";
+
+        File.AppendAllText(_logFilePath, message);
     }
 }
 
@@ -40,35 +45,15 @@ public class ConsoleLogWritter : ILogger
     }
 }
 
-public class SecureFileLogWritter : ILogger
+public class SecureLogger : ILogger
 {
     private readonly ILogger _innerLogger;
     private readonly DayOfWeek _secureDay;
 
-    public SecureFileLogWritter(ILogger innerLogger)
+    public SecureLogger(ILogger innerLogger, DayOfWeek secureDay = DayOfWeek.Friday)
     {
         _innerLogger = innerLogger;
-        _secureDay = DayOfWeek.Friday;
-    }
-
-    public void Write(string message)
-    {
-        if (DateTime.Now.DayOfWeek == _secureDay)
-        {
-            _innerLogger.Write(message);
-        }
-    }
-}
-
-public class SecureConsoleLogWritter : ILogger
-{
-    private readonly ILogger _innerLogger;
-    private readonly DayOfWeek _secureDay;
-
-    public SecureConsoleLogWritter(ILogger innerLogger)
-    {
-        _innerLogger = innerLogger;
-        _secureDay = DayOfWeek.Friday;
+        _secureDay = secureDay;
     }
 
     public void Write(string message)
