@@ -33,6 +33,9 @@ public class FileLogWritter : ILogger
 
     public void Write(string message)
     {
+        if (message == null)
+            throw new ArgumentNullException(nameof(message));
+
         File.AppendAllText(_logFilePath, message);
     }
 }
@@ -41,6 +44,9 @@ public class ConsoleLogWritter : ILogger
 {
     public void Write(string message)
     {
+        if (message == null)
+            throw new ArgumentNullException(nameof(message));
+
         Console.WriteLine(message);
     }
 }
@@ -52,16 +58,17 @@ public class SecureLogger : ILogger
 
     public SecureLogger(ILogger innerLogger, DayOfWeek secureDay = DayOfWeek.Friday)
     {
-        _innerLogger = innerLogger;
+        _innerLogger = innerLogger ?? throw new ArgumentNullException(nameof(innerLogger));
         _secureDay = secureDay;
     }
 
     public void Write(string message)
     {
+        if (message == null)
+            throw new ArgumentNullException(nameof(message));
+
         if (DateTime.Now.DayOfWeek == _secureDay)
-        {
             _innerLogger.Write(message);
-        }
     }
 }
 
@@ -71,15 +78,16 @@ public class CombinedLogger : ILogger
 
     public CombinedLogger(List<ILogger> loggers)
     {
-        _loggers = loggers;
+        _loggers = loggers ?? throw new ArgumentNullException(nameof(loggers));
     }
 
     public void Write(string message)
     {
+        if (message == null)
+            throw new ArgumentNullException(nameof(message));
+
         foreach (var logger in _loggers)
-        {
             logger.Write(message);
-        }
     }
 }
 
@@ -89,7 +97,7 @@ public class Pathfinder
 
     public Pathfinder(ILogger logger)
     {
-        _logger = logger;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public void Find()
